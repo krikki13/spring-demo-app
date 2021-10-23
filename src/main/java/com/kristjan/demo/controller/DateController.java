@@ -3,6 +3,7 @@ package com.kristjan.demo.controller;
 import com.kristjan.demo.exception.UpdatingInPostMethodException;
 import com.kristjan.demo.model.DateModel;
 import com.kristjan.demo.repository.DateRepository;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +24,7 @@ public class DateController {
 
     @PostMapping("/date")
     public void addNewDate(@RequestBody DateModel date) {
-        if(date.getId() != null) {
+        if(date.getId() != null && date.getId() != 0) {
             throw new UpdatingInPostMethodException();
         }
         dateRepository.save(date);
