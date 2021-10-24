@@ -16,11 +16,17 @@ public class DateController {
     @Autowired
     DateRepository dateRepository;
 
+    /**
+     * Returns all stored dates.
+     */
     @GetMapping("/date")
     public List<DateModel> getAllDates() {
         return dateRepository.findAll();
     }
 
+    /**
+     * Adds new date.
+     */
     @PostMapping("/date")
     public void addNewDate(@RequestBody DateModel date) {
         if(date.getId() != null && date.getId() != 0) {

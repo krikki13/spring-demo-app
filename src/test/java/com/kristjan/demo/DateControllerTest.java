@@ -1,6 +1,8 @@
 package com.kristjan.demo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kristjan.demo.controller.DateController;
 import com.kristjan.demo.model.DateModel;
 import com.kristjan.demo.repository.DateRepository;
@@ -10,7 +12,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -20,16 +21,21 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Tests storing and retrieving dates.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -43,35 +49,101 @@ public class DateControllerTest {
     @InjectMocks
     private DateController controller;
 
+    private ObjectMapper mapper;
+    private final LocalDate testDate = LocalDate.of(2021, 10, 23);
+
     @Before
     public void setup() {
         openMocks(this);
         this.mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+
+        mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
     }
 
+    /**
+     * Tests that date is saved successfully when ID is null.
+     */
     @Test
-    public void shouldReturnDefaultMessage() throws Exception {
-        DateModel testDate = new DateModel(1L, LocalDate.of(2021, 10, 23));
-        Mockito.when(repository.save(Mockito.any(DateModel.class))).thenReturn(testDate);
+    public void testAddNewDateWithNullId() throws Exception {
+        testAddDateSuccessfully(mapper.writeValueAsString(
+                new DateModel(null, testDate)));
+    }
 
-        Map<String, String> json = Stream.of(new String[][] {
-                { "date", "2021-10-23" },
-        }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
+    /**
+     * Tests that date is saved successfully when ID is 0.
+     */
+    @Test
+    public void testAddNewDateWithZeroId() throws Exception {
+        testAddDateSuccessfully(mapper.writeValueAsString(
+                new DateModel(0L, testDate)));
+    }
 
-        String x = new ObjectMapper().writeValueAsString(json);
-        System.out.println(x);
+    /**
+     * Tests that date is saved successfully when ID is not defined in JSON.
+     */
+    @Test
+    public void testAddNewDateWithoutId() throws Exception {
+        ObjectNode json = mapper.createObjectNode();
+        json.put("date", testDate.toString());
+        testAddDateSuccessfully(mapper.writeValueAsString(json));
+    }
 
+    private void testAddDateSuccessfully(String json) throws Exception {
+        System.out.println(json);
         mockMvc.perform(MockMvcRequestBuilders.post("/date")
-                .content(x)
+                .content(json)
                 .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        ArgumentCaptor<DateModel> dtoCaptor = ArgumentCaptor.forClass(DateModel.class);
-        verify(repository, times(1)).save(dtoCaptor.capture());
+        ArgumentCaptor<DateModel> argCaptor = ArgumentCaptor.forClass(DateModel.class);
+        verify(repository, times(1)).save(argCaptor.capture());
         verifyNoMoreInteractions(repository);
 
-        DateModel dtoArgument = dtoCaptor.getValue();
-        assertNull(dtoArgument.getId());
-        assertTrue(dtoArgument.getDate().isEqual(testDate.getDate()));
+        DateModel receivedDate = argCaptor.getValue();
+        assertNull(receivedDate.getId());
+        assertTrue(receivedDate.getDate().isEqual(testDate));
+    }
+
+    /**
+     * Tests that error occurs when ID is set when using POST method.
+     */
+    @Test
+    public void testAddNewDateWithSetId() throws Exception {
+        String json = mapper.writeValueAsString(new DateModel(42L, testDate));
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/date")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * Tests that error occurs when invalid date format is used.
+     */
+    @Test
+    public void testAddNewDateUsingUnsupportedFormat() throws Exception {
+        ObjectNode jsonNode = mapper.createObjectNode();
+        jsonNode.put("date", "10.10.2021");
+        String json = mapper.writeValueAsString(jsonNode);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/date")
+                .content(json)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * Tests that getting dates works.
+     */
+    @Test
+    public void testGetAllDates() throws Exception {
+        List<DateModel> dates = List.of(new DateModel(1L, testDate));
+        when(repository.findAll()).thenReturn(dates);
+
+        mockMvc.perform(get("/date")).andExpect(status().isOk())
+                .andExpect(jsonPath("$", notNullValue()))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$.[0].date").value(testDate.toString()));
     }
 }

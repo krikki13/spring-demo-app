@@ -12,6 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Tests hello world controller.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 public class HelloWorldControllerTest  {
@@ -19,6 +22,9 @@ public class HelloWorldControllerTest  {
     @Autowired
     private MockMvc mockMvc;
 
+    /**
+     * Tests that hello returns Hello world!
+     */
     @Test
     public void shouldReturnDefaultMessage() throws Exception {
         mockMvc.perform(get("/hello")).andDo(print()).andExpect(status().isOk())
