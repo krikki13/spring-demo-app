@@ -6,7 +6,7 @@ List of endpoints can be viewed on Swagger at http://localhost:8080/swagger-ui/i
 
 Docker images for PostgreSQL and Spring are available at https://hub.docker.com/u/krikki13.
 
-# Instructions:
+# Instructions
 Unfortunately running the images directly (using docker run command) does not work, because Spring cannot connect to Postgres.
 
 It works with docker-compose however.
