@@ -1,0 +1,30 @@
+version: '3'
+services:
+  spring:
+    build: .
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - 8080:8080
+
+  postgres:
+    image: postgres:11.5-alpine
+    container_name: postgres
+    volumes:
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      - PGDATA=/var/lib/postgresql/data/db
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "ckan" ]
+    ports:
+      - 5431:5432
+    restart: always
+
+volumes:
+  pgdata:
