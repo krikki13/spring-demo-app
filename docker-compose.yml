@@ -6,6 +6,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+    expose:
+      - "8080"
     ports:
       - 8080:8080
 
@@ -22,9 +24,10 @@ services:
       - PGDATA=/var/lib/postgresql/data/db
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "ckan" ]
+    expose:
+      - "5432"
     ports:
       - 5431:5432
-    restart: always
 
 volumes:
   pgdata:
