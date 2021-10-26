@@ -2,6 +2,8 @@ version: '3'
 services:
   spring:
     build: .
+    depends_on:
+      - "mysql_db"
     environment:
       MYSQL_HOST: mysql_db
       SPRING_DATASOURCE_USERNAME: root
@@ -21,7 +23,7 @@ services:
       MYSQL_ROOT_PASSWORD: password
     volumes:
       - data:/var/lib/mysql
-      - ./:/docker-entrypoint-initdb.d/:ro
+      - ./sql_init/mysql:/docker-entrypoint-initdb.d/:ro
     expose:
       - "3306"
     ports:
