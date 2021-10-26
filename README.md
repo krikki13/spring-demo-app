@@ -9,8 +9,8 @@ Docker image is available at https://hub.docker.com/repository/docker/krikki13/s
 ## Instructions
 Docker client is required. If you do not have it yet, please download it from official site.
 
-To run the application you only need to download *docker-compose.yml* file from this repository.
-Navigate to directory of the file and execute command:
+To run the application you only need to download [*docker-compose.yml*](https://github.com/krikki13/spring-demo-app/blob/master/docker-compose.yml) file from this repository.
+Then navigate to directory of the file and execute command:
 
 `docker-compose up`
 
