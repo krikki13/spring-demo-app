@@ -1,7 +1,9 @@
 version: '3'
 services:
   spring:
-    build: .
+    image: krikki13/spring-demo:latest
+    depends_on:
+      - "postgres"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
@@ -10,12 +12,13 @@ services:
       - "8080"
     ports:
       - 8080:8080
+    restart: always
 
   postgres:
     image: postgres:11.5-alpine
     container_name: postgres
     volumes:
-      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+      #- ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql # Initialization script for schemas and tables
       - pgdata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres

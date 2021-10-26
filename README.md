@@ -4,16 +4,14 @@ A hello world Spring Boot application that uses PostgreSQL.
 It features saying hello to the world as well as saving dates.
 List of endpoints can be viewed on Swagger at http://localhost:8080/swagger-ui/index.html.
 
-Docker images for PostgreSQL and Spring are available at https://hub.docker.com/u/krikki13.
+Docker image is available at https://hub.docker.com/repository/docker/krikki13/spring-demo.
 
-# Instructions
-Unfortunately running the images directly (using docker run command) does not work, because Spring cannot connect to Postgres.
+## Instructions
+Docker client is required. If you do not have it yet, please download it from official site.
 
-It works with docker-compose however.
-In order to do that:
+To run the application you only need to download *docker-compose.yml* file from this repository.
+Navigate to directory of the file and execute command:
 
--checkout this repository
+`docker-compose up`
 
--execute: mvn clean install
-
--execute: docker-compose up
+The app should now be running. Yay!
